@@ -1,0 +1,41 @@
+# This file was auto-generated from our API Definition.
+
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.serialization import FieldMetadata
+from .classification_information import ClassificationInformation
+
+
+class FieldClassificationInformation(UniversalBaseModel):
+    """
+    A field specific classification information definition.
+    """
+
+    field_path: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="fieldPath"),
+        pydantic.Field(
+            alias="fieldPath",
+            description="Proto field path which is the string representation of a field.\n > example: signal.bandwidth_hz would be bandwidth_hz in the signal component",
+        ),
+    ] = None
+    classification_information: typing_extensions.Annotated[
+        typing.Optional[ClassificationInformation],
+        FieldMetadata(alias="classificationInformation"),
+        pydantic.Field(
+            alias="classificationInformation",
+            description="The information which makes up the field level classification marking.",
+        ),
+    ] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

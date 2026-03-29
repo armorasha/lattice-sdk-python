@@ -1,0 +1,56 @@
+# This file was auto-generated from our API Definition.
+
+import datetime as dt
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.serialization import FieldMetadata
+from .orbit_mean_elements_metadata_mean_element_theory import OrbitMeanElementsMetadataMeanElementTheory
+from .orbit_mean_elements_metadata_ref_frame import OrbitMeanElementsMetadataRefFrame
+
+
+class OrbitMeanElementsMetadata(UniversalBaseModel):
+    creation_date: typing_extensions.Annotated[
+        typing.Optional[dt.datetime],
+        FieldMetadata(alias="creationDate"),
+        pydantic.Field(alias="creationDate", description="Creation date/time in UTC"),
+    ] = None
+    originator: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Creating agency or operator
+    """
+
+    message_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="messageId"),
+        pydantic.Field(alias="messageId", description="ID that uniquely identifies a message from a given originator."),
+    ] = None
+    ref_frame: typing_extensions.Annotated[
+        typing.Optional[OrbitMeanElementsMetadataRefFrame],
+        FieldMetadata(alias="refFrame"),
+        pydantic.Field(alias="refFrame", description="Reference frame, assumed to be Earth-centered"),
+    ] = None
+    ref_frame_epoch: typing_extensions.Annotated[
+        typing.Optional[dt.datetime],
+        FieldMetadata(alias="refFrameEpoch"),
+        pydantic.Field(
+            alias="refFrameEpoch",
+            description="Reference frame epoch in UTC - mandatory only if not intrinsic to frame definition",
+        ),
+    ] = None
+    mean_element_theory: typing_extensions.Annotated[
+        typing.Optional[OrbitMeanElementsMetadataMeanElementTheory],
+        FieldMetadata(alias="meanElementTheory"),
+        pydantic.Field(alias="meanElementTheory"),
+    ] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

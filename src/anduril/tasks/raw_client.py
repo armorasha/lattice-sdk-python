@@ -1,0 +1,1847 @@
+# This file was auto-generated from our API Definition.
+
+import contextlib
+import typing
+from json.decoder import JSONDecodeError
+from logging import error, warning
+
+from ..core.api_error import ApiError
+from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from ..core.http_response import AsyncHttpResponse, HttpResponse
+from ..core.http_sse._api import EventSource
+from ..core.jsonable_encoder import jsonable_encoder
+from ..core.parse_error import ParsingError
+from ..core.pydantic_utilities import parse_obj_as, parse_sse_obj
+from ..core.request_options import RequestOptions
+from ..core.serialization import convert_and_respect_annotation_metadata
+from ..errors.bad_request_error import BadRequestError
+from ..errors.not_found_error import NotFoundError
+from ..errors.unauthorized_error import UnauthorizedError
+from ..types.agent_request import AgentRequest
+from ..types.entity_ids_selector import EntityIdsSelector
+from ..types.google_protobuf_any import GoogleProtobufAny
+from ..types.principal import Principal
+from ..types.relations import Relations
+from ..types.task import Task
+from ..types.task_entity import TaskEntity
+from ..types.task_query_results import TaskQueryResults
+from ..types.task_status import TaskStatus
+from .types.stream_as_agent_response import StreamAsAgentResponse
+from .types.stream_tasks_response import StreamTasksResponse
+from .types.task_query_status_filter import TaskQueryStatusFilter
+from .types.task_query_update_time_range import TaskQueryUpdateTimeRange
+from .types.task_stream_request_task_type import TaskStreamRequestTaskType
+from pydantic import ValidationError
+
+# this is used as the default value for optional parameters
+OMIT = typing.cast(typing.Any, ...)
+
+
+class RawTasksClient:
+    def __init__(self, *, client_wrapper: SyncClientWrapper):
+        self._client_wrapper = client_wrapper
+
+    def create_task(
+        self,
+        *,
+        task_id: typing.Optional[str] = OMIT,
+        display_name: typing.Optional[str] = OMIT,
+        description: typing.Optional[str] = OMIT,
+        specification: typing.Optional[GoogleProtobufAny] = OMIT,
+        author: typing.Optional[Principal] = OMIT,
+        relations: typing.Optional[Relations] = OMIT,
+        is_executed_elsewhere: typing.Optional[bool] = OMIT,
+        initial_entities: typing.Optional[typing.Sequence[TaskEntity]] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[Task]:
+        """
+        Creates a new Task in the system with the specified parameters.
+
+        This method initiates a new task with a unique ID (either provided or auto-generated),
+        sets the initial task state to STATUS_CREATED, and establishes task ownership. The task
+        can be assigned to a specific agent through the Relations field.
+
+        Once created, a task enters the lifecycle workflow and can be tracked, updated, and managed
+        through other Tasks API endpoints.
+
+        Parameters
+        ----------
+        task_id : typing.Optional[str]
+            If non-empty, will set the requested Task ID, otherwise will generate a new random
+            GUID. Will reject if supplied Task ID does not match [A-Za-z0-9_-.]{5,36}.
+
+        display_name : typing.Optional[str]
+            Human readable display name for this Task, should be short (<100 chars).
+
+        description : typing.Optional[str]
+            Longer, free form human readable description of this Task.
+
+        specification : typing.Optional[GoogleProtobufAny]
+            The path for the Protobuf task definition, and the complete task data.
+
+        author : typing.Optional[Principal]
+
+        relations : typing.Optional[Relations]
+            Any relationships associated with this Task, such as a parent Task or an assignee
+            this Task is designated to for execution.
+
+        is_executed_elsewhere : typing.Optional[bool]
+            If set, then the service will not trigger execution of this task on an agent. Useful
+            for when ingesting tasks from an external system that is triggering execution of tasks
+            on agents.
+
+        initial_entities : typing.Optional[typing.Sequence[TaskEntity]]
+            Indicates an initial set of entities that can be used to execute an entity aware
+            task. For example, an entity Objective, an entity Keep In Zone, etc.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[Task]
+            Task creation was successful
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            "api/v1/tasks",
+            method="POST",
+            json={
+                "taskId": task_id,
+                "displayName": display_name,
+                "description": description,
+                "specification": convert_and_respect_annotation_metadata(
+                    object_=specification, annotation=GoogleProtobufAny, direction="write"
+                ),
+                "author": convert_and_respect_annotation_metadata(
+                    object_=author, annotation=Principal, direction="write"
+                ),
+                "relations": convert_and_respect_annotation_metadata(
+                    object_=relations, annotation=Relations, direction="write"
+                ),
+                "isExecutedElsewhere": is_executed_elsewhere,
+                "initialEntities": convert_and_respect_annotation_metadata(
+                    object_=initial_entities, annotation=typing.Sequence[TaskEntity], direction="write"
+                ),
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    Task,
+                    parse_obj_as(
+                        type_=Task,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    def get_task(self, task_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[Task]:
+        """
+        Retrieves a specific Task by its ID, with options to select a particular task version or view.
+
+        This method returns detailed information about a task including its current status,
+        specification, relations, and other metadata. The response includes the complete Task object
+        with all associated fields.
+
+        By default, the method returns the latest definition version of the task from the manager's
+        perspective.
+
+        Parameters
+        ----------
+        task_id : str
+            ID of task to return
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[Task]
+            Task retrieval was successful.
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"api/v1/tasks/{jsonable_encoder(task_id)}",
+            method="GET",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    Task,
+                    parse_obj_as(
+                        type_=Task,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    def update_task_status(
+        self,
+        task_id: str,
+        *,
+        status_version: typing.Optional[int] = OMIT,
+        new_status: typing.Optional[TaskStatus] = OMIT,
+        author: typing.Optional[Principal] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[Task]:
+        """
+        Updates the status of a Task as it progresses through its lifecycle.
+
+        This method allows agents or operators to report the current state of a task,
+        which could include changes to task status, and error information.
+
+        Each status update increments the task's status_version. When updating status,
+        clients must provide the current version to ensure consistency. The system rejects
+        updates with mismatched versions to prevent race conditions.
+
+        Terminal states (`STATUS_DONE_OK` and `STATUS_DONE_NOT_OK`) are permanent; once a task
+        reaches these states, no further updates are allowed.
+
+        Parameters
+        ----------
+        task_id : str
+            ID of task to update status of
+
+        status_version : typing.Optional[int]
+            The status version of the task to update. This version number increments to indicate the task's
+            current stage in its status lifecycle. Specifically, whenever a task's status updates, the status
+            version increments by one. Any status updates received with a lower status version number than what
+            is known are considered stale and ignored.
+
+        new_status : typing.Optional[TaskStatus]
+            The new status of the task.
+
+        author : typing.Optional[Principal]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[Task]
+            Task status update was successful
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"api/v1/tasks/{jsonable_encoder(task_id)}/status",
+            method="PUT",
+            json={
+                "statusVersion": status_version,
+                "newStatus": convert_and_respect_annotation_metadata(
+                    object_=new_status, annotation=TaskStatus, direction="write"
+                ),
+                "author": convert_and_respect_annotation_metadata(
+                    object_=author, annotation=Principal, direction="write"
+                ),
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    Task,
+                    parse_obj_as(
+                        type_=Task,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    def cancel_task(
+        self,
+        task_id: str,
+        *,
+        author: typing.Optional[Principal] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[Task]:
+        """
+        Cancels a task by marking it for cancellation in the system.
+
+        This method initiates task cancellation based on the task's current state:
+        - If the task has not been sent to an agent, it cancels immediately and transitions the task
+          to a terminal state (`STATUS_DONE_NOT_OK` with `ERROR_CODE_CANCELLED`).
+        - If the task has already been sent to an agent, the cancellation request is routed to the agent with a delivery status of `DELIVERY_STATUS_PENDING_CANCEL`.
+          The agent is responsible for determining whether cancellation is possible and updating
+          the task status accordingly via the `UpdateStatus` endpoint:
+          - If the task can be cancelled, the agent should update the task status to `STATUS_DONE_NOT_OK`.
+          - If the task cannot be cancelled, the agent should attach an error to the task stating why cancellation is not possible using `UpdateStatus`
+            or the returned task object.
+
+        Parameters
+        ----------
+        task_id : str
+            The ID of task to cancel
+
+        author : typing.Optional[Principal]
+            Who or what is requesting to cancel this task.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[Task]
+            Task cancellation was successful.
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"api/v1/tasks/{jsonable_encoder(task_id)}/cancel",
+            method="PUT",
+            json={
+                "author": convert_and_respect_annotation_metadata(
+                    object_=author, annotation=Principal, direction="write"
+                ),
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    Task,
+                    parse_obj_as(
+                        type_=Task,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    def query_tasks(
+        self,
+        *,
+        page_token: typing.Optional[str] = OMIT,
+        parent_task_id: typing.Optional[str] = OMIT,
+        status_filter: typing.Optional[TaskQueryStatusFilter] = OMIT,
+        update_time_range: typing.Optional[TaskQueryUpdateTimeRange] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[TaskQueryResults]:
+        """
+        Searches for Tasks that match specified filtering criteria and returns matching tasks in paginated form.
+
+        This method allows filtering tasks based on multiple criteria including:
+        - Parent task relationships
+        - Task status (with inclusive or exclusive filtering)
+        - Update time ranges
+        - Task view (manager or agent perspective)
+        - Task assignee
+        - Task type (via exact URL matches or prefix matching)
+
+        Results are returned in pages. When more results are available than can be returned in a single
+        response, a page_token is provided that can be used in subsequent requests to retrieve the next
+        set of results.
+
+        By default, this returns the latest task version for each matching task from the manager's perspective.
+
+        Parameters
+        ----------
+        page_token : typing.Optional[str]
+            If set, returns results starting from the given pageToken.
+
+        parent_task_id : typing.Optional[str]
+            If present matches Tasks with this parent Task ID.
+            Note: this is mutually exclusive with all other query parameters, for example, either provide parent task ID, or
+            any of the remaining parameters, but not both.
+
+        status_filter : typing.Optional[TaskQueryStatusFilter]
+
+        update_time_range : typing.Optional[TaskQueryUpdateTimeRange]
+            If provided, only provides Tasks updated within the time range.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[TaskQueryResults]
+            Task query was successful
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            "api/v1/tasks/query",
+            method="POST",
+            json={
+                "pageToken": page_token,
+                "parentTaskId": parent_task_id,
+                "statusFilter": convert_and_respect_annotation_metadata(
+                    object_=status_filter, annotation=TaskQueryStatusFilter, direction="write"
+                ),
+                "updateTimeRange": convert_and_respect_annotation_metadata(
+                    object_=update_time_range, annotation=TaskQueryUpdateTimeRange, direction="write"
+                ),
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    TaskQueryResults,
+                    parse_obj_as(
+                        type_=TaskQueryResults,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    @contextlib.contextmanager
+    def stream_tasks(
+        self,
+        *,
+        heartbeat_interval_ms: typing.Optional[int] = OMIT,
+        rate_limit: typing.Optional[int] = OMIT,
+        exclude_preexisting_tasks: typing.Optional[bool] = OMIT,
+        task_type: typing.Optional[TaskStreamRequestTaskType] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> typing.Iterator[HttpResponse[typing.Iterator[StreamTasksResponse]]]:
+        """
+        Establishes a server streaming connection that delivers task updates in real-time using Server-Sent Events (SSE).
+
+        The stream delivers all existing non-terminal tasks when first connected, followed by real-time
+        updates for task creation and status changes. Additionally, heartbeat messages are sent periodically to maintain the connection.
+
+        Parameters
+        ----------
+        heartbeat_interval_ms : typing.Optional[int]
+            The time interval, in milliseconds, that determines the frequency at which to send heartbeat events. Defaults to 30000 (30 seconds).
+
+        rate_limit : typing.Optional[int]
+            The time interval, in milliseconds, after an update for a given task before another one will be sent for the same task.
+            If set, value must be >= 250.
+
+        exclude_preexisting_tasks : typing.Optional[bool]
+            Optional flag to only include tasks created or updated after the stream is initiated, and not any previous preexisting tasks.
+            If unset or false, the stream will include any new tasks and task updates, as well as all preexisting tasks.
+
+        task_type : typing.Optional[TaskStreamRequestTaskType]
+            Optional filter that only returns tasks with specific types. If not provided, all task types will be streamed.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Yields
+        ------
+        typing.Iterator[HttpResponse[typing.Iterator[StreamTasksResponse]]]
+            Returns a stream of task updates as they occur.
+        """
+        with self._client_wrapper.httpx_client.stream(
+            "api/v1/tasks/stream",
+            method="POST",
+            json={
+                "heartbeatIntervalMs": heartbeat_interval_ms,
+                "rateLimit": rate_limit,
+                "excludePreexistingTasks": exclude_preexisting_tasks,
+                "taskType": convert_and_respect_annotation_metadata(
+                    object_=task_type, annotation=TaskStreamRequestTaskType, direction="write"
+                ),
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        ) as _response:
+
+            def _stream() -> HttpResponse[typing.Iterator[StreamTasksResponse]]:
+                try:
+                    if 200 <= _response.status_code < 300:
+
+                        def _iter():
+                            _event_source = EventSource(_response)
+                            for _sse in _event_source.iter_sse():
+                                if _sse.data == None:
+                                    return
+                                try:
+                                    yield typing.cast(
+                                        StreamTasksResponse,
+                                        parse_sse_obj(
+                                            sse=_sse,
+                                            type_=StreamTasksResponse,  # type: ignore
+                                        ),
+                                    )
+                                except JSONDecodeError as e:
+                                    warning(f"Skipping SSE event with invalid JSON: {e}, sse: {_sse!r}")
+                                except (TypeError, ValueError, KeyError, AttributeError) as e:
+                                    warning(
+                                        f"Skipping SSE event due to model construction error: {type(e).__name__}: {e}, sse: {_sse!r}"
+                                    )
+                                except Exception as e:
+                                    error(
+                                        f"Unexpected error processing SSE event: {type(e).__name__}: {e}, sse: {_sse!r}"
+                                    )
+                            return
+
+                        return HttpResponse(response=_response, data=_iter())
+                    _response.read()
+                    if _response.status_code == 400:
+                        raise BadRequestError(
+                            headers=dict(_response.headers),
+                            body=typing.cast(
+                                typing.Any,
+                                parse_obj_as(
+                                    type_=typing.Any,  # type: ignore
+                                    object_=_response.json(),
+                                ),
+                            ),
+                        )
+                    if _response.status_code == 401:
+                        raise UnauthorizedError(
+                            headers=dict(_response.headers),
+                            body=typing.cast(
+                                typing.Any,
+                                parse_obj_as(
+                                    type_=typing.Any,  # type: ignore
+                                    object_=_response.json(),
+                                ),
+                            ),
+                        )
+                    _response_json = _response.json()
+                except JSONDecodeError:
+                    raise ApiError(
+                        status_code=_response.status_code, headers=dict(_response.headers), body=_response.text
+                    )
+                except ValidationError as e:
+                    raise ParsingError(
+                        status_code=_response.status_code,
+                        headers=dict(_response.headers),
+                        body=_response.json(),
+                        cause=e,
+                    )
+                raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+            yield _stream()
+
+    def listen_as_agent(
+        self,
+        *,
+        agent_selector: typing.Optional[EntityIdsSelector] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[AgentRequest]:
+        """
+        Establishes a server streaming connection that delivers tasks to taskable agents for execution.
+
+        This method creates a persistent connection from Tasks API to an agent, allowing the server
+        to push tasks to the agent as they become available. The agent receives a stream of tasks that
+        match its selector criteria (entity IDs).
+
+        The stream delivers three types of requests:
+        - ExecuteRequest: Contains a new task for the agent to execute
+        - CancelRequest: Indicates a task should be canceled
+        - CompleteRequest: Indicates a task should be completed
+
+        This is the primary method for taskable agents to receive and process tasks in real-time.
+        Agents should maintain this connection and process incoming tasks according to their capabilities.
+
+        When an agent receives a task, it should update the task status using the UpdateStatus endpoint
+        to provide progress information back to Tasks API.
+
+        This is a long polling API that will block until a new task is ready for delivery. If no new task is
+        available then the server will hold on to your request for up to 5 minutes, after that 5 minute timeout
+        period you will be expected to reinitiate a new request.
+
+        Parameters
+        ----------
+        agent_selector : typing.Optional[EntityIdsSelector]
+            Selector criteria to determine which Agent Tasks the agent receives
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[AgentRequest]
+            Requests for the agent to comply with.
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            "api/v1/agent/listen",
+            method="POST",
+            json={
+                "agentSelector": convert_and_respect_annotation_metadata(
+                    object_=agent_selector, annotation=EntityIdsSelector, direction="write"
+                ),
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    AgentRequest,
+                    parse_obj_as(
+                        type_=AgentRequest,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    @contextlib.contextmanager
+    def stream_as_agent(
+        self,
+        *,
+        agent_selector: typing.Optional[EntityIdsSelector] = OMIT,
+        heartbeat_interval_ms: typing.Optional[int] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> typing.Iterator[HttpResponse[typing.Iterator[StreamAsAgentResponse]]]:
+        """
+        Establishes a server streaming connection that delivers tasks to taskable agents for execution
+        using Server-Sent Events (SSE).
+
+        This method creates a connection from the Tasks API to an agent that streams relevant tasks to the listener agent. The agent receives a stream of tasks that match the entities specified by the tasks' selector criteria.
+
+        The stream delivers three types of requests:
+        - `ExecuteRequest`: Contains a new task for the agent to execute
+        - `CancelRequest`: Indicates a task should be canceled
+        - `CompleteRequest`: Indicates a task should be completed
+
+        Additionally, heartbeat messages are sent periodically to maintain the connection.
+
+        This is recommended method for taskable agents to receive and process tasks in real-time.
+        Agents should maintain connection to this stream and process incoming tasks according to their capabilities.
+
+        When an agent receives a task, it should update the task status using the `UpdateStatus` endpoint
+        to provide progress information back to Tasks API.
+
+        Parameters
+        ----------
+        agent_selector : typing.Optional[EntityIdsSelector]
+            The selector criteria to determine which tasks the agent receives.
+
+        heartbeat_interval_ms : typing.Optional[int]
+            The time interval, defined in seconds, that determines the frequency at which to send heartbeat events. Defaults to 30s.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Yields
+        ------
+        typing.Iterator[HttpResponse[typing.Iterator[StreamAsAgentResponse]]]
+            Returns a stream of tasks to the agent as they become available.
+        """
+        with self._client_wrapper.httpx_client.stream(
+            "api/v1/agent/stream",
+            method="POST",
+            json={
+                "agentSelector": convert_and_respect_annotation_metadata(
+                    object_=agent_selector, annotation=EntityIdsSelector, direction="write"
+                ),
+                "heartbeatIntervalMs": heartbeat_interval_ms,
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        ) as _response:
+
+            def _stream() -> HttpResponse[typing.Iterator[StreamAsAgentResponse]]:
+                try:
+                    if 200 <= _response.status_code < 300:
+
+                        def _iter():
+                            _event_source = EventSource(_response)
+                            for _sse in _event_source.iter_sse():
+                                if _sse.data == None:
+                                    return
+                                try:
+                                    yield typing.cast(
+                                        StreamAsAgentResponse,
+                                        parse_sse_obj(
+                                            sse=_sse,
+                                            type_=StreamAsAgentResponse,  # type: ignore
+                                        ),
+                                    )
+                                except JSONDecodeError as e:
+                                    warning(f"Skipping SSE event with invalid JSON: {e}, sse: {_sse!r}")
+                                except (TypeError, ValueError, KeyError, AttributeError) as e:
+                                    warning(
+                                        f"Skipping SSE event due to model construction error: {type(e).__name__}: {e}, sse: {_sse!r}"
+                                    )
+                                except Exception as e:
+                                    error(
+                                        f"Unexpected error processing SSE event: {type(e).__name__}: {e}, sse: {_sse!r}"
+                                    )
+                            return
+
+                        return HttpResponse(response=_response, data=_iter())
+                    _response.read()
+                    if _response.status_code == 400:
+                        raise BadRequestError(
+                            headers=dict(_response.headers),
+                            body=typing.cast(
+                                typing.Any,
+                                parse_obj_as(
+                                    type_=typing.Any,  # type: ignore
+                                    object_=_response.json(),
+                                ),
+                            ),
+                        )
+                    if _response.status_code == 401:
+                        raise UnauthorizedError(
+                            headers=dict(_response.headers),
+                            body=typing.cast(
+                                typing.Any,
+                                parse_obj_as(
+                                    type_=typing.Any,  # type: ignore
+                                    object_=_response.json(),
+                                ),
+                            ),
+                        )
+                    _response_json = _response.json()
+                except JSONDecodeError:
+                    raise ApiError(
+                        status_code=_response.status_code, headers=dict(_response.headers), body=_response.text
+                    )
+                except ValidationError as e:
+                    raise ParsingError(
+                        status_code=_response.status_code,
+                        headers=dict(_response.headers),
+                        body=_response.json(),
+                        cause=e,
+                    )
+                raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+            yield _stream()
+
+
+class AsyncRawTasksClient:
+    def __init__(self, *, client_wrapper: AsyncClientWrapper):
+        self._client_wrapper = client_wrapper
+
+    async def create_task(
+        self,
+        *,
+        task_id: typing.Optional[str] = OMIT,
+        display_name: typing.Optional[str] = OMIT,
+        description: typing.Optional[str] = OMIT,
+        specification: typing.Optional[GoogleProtobufAny] = OMIT,
+        author: typing.Optional[Principal] = OMIT,
+        relations: typing.Optional[Relations] = OMIT,
+        is_executed_elsewhere: typing.Optional[bool] = OMIT,
+        initial_entities: typing.Optional[typing.Sequence[TaskEntity]] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[Task]:
+        """
+        Creates a new Task in the system with the specified parameters.
+
+        This method initiates a new task with a unique ID (either provided or auto-generated),
+        sets the initial task state to STATUS_CREATED, and establishes task ownership. The task
+        can be assigned to a specific agent through the Relations field.
+
+        Once created, a task enters the lifecycle workflow and can be tracked, updated, and managed
+        through other Tasks API endpoints.
+
+        Parameters
+        ----------
+        task_id : typing.Optional[str]
+            If non-empty, will set the requested Task ID, otherwise will generate a new random
+            GUID. Will reject if supplied Task ID does not match [A-Za-z0-9_-.]{5,36}.
+
+        display_name : typing.Optional[str]
+            Human readable display name for this Task, should be short (<100 chars).
+
+        description : typing.Optional[str]
+            Longer, free form human readable description of this Task.
+
+        specification : typing.Optional[GoogleProtobufAny]
+            The path for the Protobuf task definition, and the complete task data.
+
+        author : typing.Optional[Principal]
+
+        relations : typing.Optional[Relations]
+            Any relationships associated with this Task, such as a parent Task or an assignee
+            this Task is designated to for execution.
+
+        is_executed_elsewhere : typing.Optional[bool]
+            If set, then the service will not trigger execution of this task on an agent. Useful
+            for when ingesting tasks from an external system that is triggering execution of tasks
+            on agents.
+
+        initial_entities : typing.Optional[typing.Sequence[TaskEntity]]
+            Indicates an initial set of entities that can be used to execute an entity aware
+            task. For example, an entity Objective, an entity Keep In Zone, etc.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[Task]
+            Task creation was successful
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            "api/v1/tasks",
+            method="POST",
+            json={
+                "taskId": task_id,
+                "displayName": display_name,
+                "description": description,
+                "specification": convert_and_respect_annotation_metadata(
+                    object_=specification, annotation=GoogleProtobufAny, direction="write"
+                ),
+                "author": convert_and_respect_annotation_metadata(
+                    object_=author, annotation=Principal, direction="write"
+                ),
+                "relations": convert_and_respect_annotation_metadata(
+                    object_=relations, annotation=Relations, direction="write"
+                ),
+                "isExecutedElsewhere": is_executed_elsewhere,
+                "initialEntities": convert_and_respect_annotation_metadata(
+                    object_=initial_entities, annotation=typing.Sequence[TaskEntity], direction="write"
+                ),
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    Task,
+                    parse_obj_as(
+                        type_=Task,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def get_task(
+        self, task_id: str, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> AsyncHttpResponse[Task]:
+        """
+        Retrieves a specific Task by its ID, with options to select a particular task version or view.
+
+        This method returns detailed information about a task including its current status,
+        specification, relations, and other metadata. The response includes the complete Task object
+        with all associated fields.
+
+        By default, the method returns the latest definition version of the task from the manager's
+        perspective.
+
+        Parameters
+        ----------
+        task_id : str
+            ID of task to return
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[Task]
+            Task retrieval was successful.
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"api/v1/tasks/{jsonable_encoder(task_id)}",
+            method="GET",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    Task,
+                    parse_obj_as(
+                        type_=Task,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def update_task_status(
+        self,
+        task_id: str,
+        *,
+        status_version: typing.Optional[int] = OMIT,
+        new_status: typing.Optional[TaskStatus] = OMIT,
+        author: typing.Optional[Principal] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[Task]:
+        """
+        Updates the status of a Task as it progresses through its lifecycle.
+
+        This method allows agents or operators to report the current state of a task,
+        which could include changes to task status, and error information.
+
+        Each status update increments the task's status_version. When updating status,
+        clients must provide the current version to ensure consistency. The system rejects
+        updates with mismatched versions to prevent race conditions.
+
+        Terminal states (`STATUS_DONE_OK` and `STATUS_DONE_NOT_OK`) are permanent; once a task
+        reaches these states, no further updates are allowed.
+
+        Parameters
+        ----------
+        task_id : str
+            ID of task to update status of
+
+        status_version : typing.Optional[int]
+            The status version of the task to update. This version number increments to indicate the task's
+            current stage in its status lifecycle. Specifically, whenever a task's status updates, the status
+            version increments by one. Any status updates received with a lower status version number than what
+            is known are considered stale and ignored.
+
+        new_status : typing.Optional[TaskStatus]
+            The new status of the task.
+
+        author : typing.Optional[Principal]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[Task]
+            Task status update was successful
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"api/v1/tasks/{jsonable_encoder(task_id)}/status",
+            method="PUT",
+            json={
+                "statusVersion": status_version,
+                "newStatus": convert_and_respect_annotation_metadata(
+                    object_=new_status, annotation=TaskStatus, direction="write"
+                ),
+                "author": convert_and_respect_annotation_metadata(
+                    object_=author, annotation=Principal, direction="write"
+                ),
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    Task,
+                    parse_obj_as(
+                        type_=Task,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def cancel_task(
+        self,
+        task_id: str,
+        *,
+        author: typing.Optional[Principal] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[Task]:
+        """
+        Cancels a task by marking it for cancellation in the system.
+
+        This method initiates task cancellation based on the task's current state:
+        - If the task has not been sent to an agent, it cancels immediately and transitions the task
+          to a terminal state (`STATUS_DONE_NOT_OK` with `ERROR_CODE_CANCELLED`).
+        - If the task has already been sent to an agent, the cancellation request is routed to the agent with a delivery status of `DELIVERY_STATUS_PENDING_CANCEL`.
+          The agent is responsible for determining whether cancellation is possible and updating
+          the task status accordingly via the `UpdateStatus` endpoint:
+          - If the task can be cancelled, the agent should update the task status to `STATUS_DONE_NOT_OK`.
+          - If the task cannot be cancelled, the agent should attach an error to the task stating why cancellation is not possible using `UpdateStatus`
+            or the returned task object.
+
+        Parameters
+        ----------
+        task_id : str
+            The ID of task to cancel
+
+        author : typing.Optional[Principal]
+            Who or what is requesting to cancel this task.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[Task]
+            Task cancellation was successful.
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"api/v1/tasks/{jsonable_encoder(task_id)}/cancel",
+            method="PUT",
+            json={
+                "author": convert_and_respect_annotation_metadata(
+                    object_=author, annotation=Principal, direction="write"
+                ),
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    Task,
+                    parse_obj_as(
+                        type_=Task,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def query_tasks(
+        self,
+        *,
+        page_token: typing.Optional[str] = OMIT,
+        parent_task_id: typing.Optional[str] = OMIT,
+        status_filter: typing.Optional[TaskQueryStatusFilter] = OMIT,
+        update_time_range: typing.Optional[TaskQueryUpdateTimeRange] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[TaskQueryResults]:
+        """
+        Searches for Tasks that match specified filtering criteria and returns matching tasks in paginated form.
+
+        This method allows filtering tasks based on multiple criteria including:
+        - Parent task relationships
+        - Task status (with inclusive or exclusive filtering)
+        - Update time ranges
+        - Task view (manager or agent perspective)
+        - Task assignee
+        - Task type (via exact URL matches or prefix matching)
+
+        Results are returned in pages. When more results are available than can be returned in a single
+        response, a page_token is provided that can be used in subsequent requests to retrieve the next
+        set of results.
+
+        By default, this returns the latest task version for each matching task from the manager's perspective.
+
+        Parameters
+        ----------
+        page_token : typing.Optional[str]
+            If set, returns results starting from the given pageToken.
+
+        parent_task_id : typing.Optional[str]
+            If present matches Tasks with this parent Task ID.
+            Note: this is mutually exclusive with all other query parameters, for example, either provide parent task ID, or
+            any of the remaining parameters, but not both.
+
+        status_filter : typing.Optional[TaskQueryStatusFilter]
+
+        update_time_range : typing.Optional[TaskQueryUpdateTimeRange]
+            If provided, only provides Tasks updated within the time range.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[TaskQueryResults]
+            Task query was successful
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            "api/v1/tasks/query",
+            method="POST",
+            json={
+                "pageToken": page_token,
+                "parentTaskId": parent_task_id,
+                "statusFilter": convert_and_respect_annotation_metadata(
+                    object_=status_filter, annotation=TaskQueryStatusFilter, direction="write"
+                ),
+                "updateTimeRange": convert_and_respect_annotation_metadata(
+                    object_=update_time_range, annotation=TaskQueryUpdateTimeRange, direction="write"
+                ),
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    TaskQueryResults,
+                    parse_obj_as(
+                        type_=TaskQueryResults,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    @contextlib.asynccontextmanager
+    async def stream_tasks(
+        self,
+        *,
+        heartbeat_interval_ms: typing.Optional[int] = OMIT,
+        rate_limit: typing.Optional[int] = OMIT,
+        exclude_preexisting_tasks: typing.Optional[bool] = OMIT,
+        task_type: typing.Optional[TaskStreamRequestTaskType] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> typing.AsyncIterator[AsyncHttpResponse[typing.AsyncIterator[StreamTasksResponse]]]:
+        """
+        Establishes a server streaming connection that delivers task updates in real-time using Server-Sent Events (SSE).
+
+        The stream delivers all existing non-terminal tasks when first connected, followed by real-time
+        updates for task creation and status changes. Additionally, heartbeat messages are sent periodically to maintain the connection.
+
+        Parameters
+        ----------
+        heartbeat_interval_ms : typing.Optional[int]
+            The time interval, in milliseconds, that determines the frequency at which to send heartbeat events. Defaults to 30000 (30 seconds).
+
+        rate_limit : typing.Optional[int]
+            The time interval, in milliseconds, after an update for a given task before another one will be sent for the same task.
+            If set, value must be >= 250.
+
+        exclude_preexisting_tasks : typing.Optional[bool]
+            Optional flag to only include tasks created or updated after the stream is initiated, and not any previous preexisting tasks.
+            If unset or false, the stream will include any new tasks and task updates, as well as all preexisting tasks.
+
+        task_type : typing.Optional[TaskStreamRequestTaskType]
+            Optional filter that only returns tasks with specific types. If not provided, all task types will be streamed.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Yields
+        ------
+        typing.AsyncIterator[AsyncHttpResponse[typing.AsyncIterator[StreamTasksResponse]]]
+            Returns a stream of task updates as they occur.
+        """
+        async with self._client_wrapper.httpx_client.stream(
+            "api/v1/tasks/stream",
+            method="POST",
+            json={
+                "heartbeatIntervalMs": heartbeat_interval_ms,
+                "rateLimit": rate_limit,
+                "excludePreexistingTasks": exclude_preexisting_tasks,
+                "taskType": convert_and_respect_annotation_metadata(
+                    object_=task_type, annotation=TaskStreamRequestTaskType, direction="write"
+                ),
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        ) as _response:
+
+            async def _stream() -> AsyncHttpResponse[typing.AsyncIterator[StreamTasksResponse]]:
+                try:
+                    if 200 <= _response.status_code < 300:
+
+                        async def _iter():
+                            _event_source = EventSource(_response)
+                            async for _sse in _event_source.aiter_sse():
+                                if _sse.data == None:
+                                    return
+                                try:
+                                    yield typing.cast(
+                                        StreamTasksResponse,
+                                        parse_sse_obj(
+                                            sse=_sse,
+                                            type_=StreamTasksResponse,  # type: ignore
+                                        ),
+                                    )
+                                except JSONDecodeError as e:
+                                    warning(f"Skipping SSE event with invalid JSON: {e}, sse: {_sse!r}")
+                                except (TypeError, ValueError, KeyError, AttributeError) as e:
+                                    warning(
+                                        f"Skipping SSE event due to model construction error: {type(e).__name__}: {e}, sse: {_sse!r}"
+                                    )
+                                except Exception as e:
+                                    error(
+                                        f"Unexpected error processing SSE event: {type(e).__name__}: {e}, sse: {_sse!r}"
+                                    )
+                            return
+
+                        return AsyncHttpResponse(response=_response, data=_iter())
+                    await _response.aread()
+                    if _response.status_code == 400:
+                        raise BadRequestError(
+                            headers=dict(_response.headers),
+                            body=typing.cast(
+                                typing.Any,
+                                parse_obj_as(
+                                    type_=typing.Any,  # type: ignore
+                                    object_=_response.json(),
+                                ),
+                            ),
+                        )
+                    if _response.status_code == 401:
+                        raise UnauthorizedError(
+                            headers=dict(_response.headers),
+                            body=typing.cast(
+                                typing.Any,
+                                parse_obj_as(
+                                    type_=typing.Any,  # type: ignore
+                                    object_=_response.json(),
+                                ),
+                            ),
+                        )
+                    _response_json = _response.json()
+                except JSONDecodeError:
+                    raise ApiError(
+                        status_code=_response.status_code, headers=dict(_response.headers), body=_response.text
+                    )
+                except ValidationError as e:
+                    raise ParsingError(
+                        status_code=_response.status_code,
+                        headers=dict(_response.headers),
+                        body=_response.json(),
+                        cause=e,
+                    )
+                raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+            yield await _stream()
+
+    async def listen_as_agent(
+        self,
+        *,
+        agent_selector: typing.Optional[EntityIdsSelector] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[AgentRequest]:
+        """
+        Establishes a server streaming connection that delivers tasks to taskable agents for execution.
+
+        This method creates a persistent connection from Tasks API to an agent, allowing the server
+        to push tasks to the agent as they become available. The agent receives a stream of tasks that
+        match its selector criteria (entity IDs).
+
+        The stream delivers three types of requests:
+        - ExecuteRequest: Contains a new task for the agent to execute
+        - CancelRequest: Indicates a task should be canceled
+        - CompleteRequest: Indicates a task should be completed
+
+        This is the primary method for taskable agents to receive and process tasks in real-time.
+        Agents should maintain this connection and process incoming tasks according to their capabilities.
+
+        When an agent receives a task, it should update the task status using the UpdateStatus endpoint
+        to provide progress information back to Tasks API.
+
+        This is a long polling API that will block until a new task is ready for delivery. If no new task is
+        available then the server will hold on to your request for up to 5 minutes, after that 5 minute timeout
+        period you will be expected to reinitiate a new request.
+
+        Parameters
+        ----------
+        agent_selector : typing.Optional[EntityIdsSelector]
+            Selector criteria to determine which Agent Tasks the agent receives
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[AgentRequest]
+            Requests for the agent to comply with.
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            "api/v1/agent/listen",
+            method="POST",
+            json={
+                "agentSelector": convert_and_respect_annotation_metadata(
+                    object_=agent_selector, annotation=EntityIdsSelector, direction="write"
+                ),
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    AgentRequest,
+                    parse_obj_as(
+                        type_=AgentRequest,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    @contextlib.asynccontextmanager
+    async def stream_as_agent(
+        self,
+        *,
+        agent_selector: typing.Optional[EntityIdsSelector] = OMIT,
+        heartbeat_interval_ms: typing.Optional[int] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> typing.AsyncIterator[AsyncHttpResponse[typing.AsyncIterator[StreamAsAgentResponse]]]:
+        """
+        Establishes a server streaming connection that delivers tasks to taskable agents for execution
+        using Server-Sent Events (SSE).
+
+        This method creates a connection from the Tasks API to an agent that streams relevant tasks to the listener agent. The agent receives a stream of tasks that match the entities specified by the tasks' selector criteria.
+
+        The stream delivers three types of requests:
+        - `ExecuteRequest`: Contains a new task for the agent to execute
+        - `CancelRequest`: Indicates a task should be canceled
+        - `CompleteRequest`: Indicates a task should be completed
+
+        Additionally, heartbeat messages are sent periodically to maintain the connection.
+
+        This is recommended method for taskable agents to receive and process tasks in real-time.
+        Agents should maintain connection to this stream and process incoming tasks according to their capabilities.
+
+        When an agent receives a task, it should update the task status using the `UpdateStatus` endpoint
+        to provide progress information back to Tasks API.
+
+        Parameters
+        ----------
+        agent_selector : typing.Optional[EntityIdsSelector]
+            The selector criteria to determine which tasks the agent receives.
+
+        heartbeat_interval_ms : typing.Optional[int]
+            The time interval, defined in seconds, that determines the frequency at which to send heartbeat events. Defaults to 30s.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Yields
+        ------
+        typing.AsyncIterator[AsyncHttpResponse[typing.AsyncIterator[StreamAsAgentResponse]]]
+            Returns a stream of tasks to the agent as they become available.
+        """
+        async with self._client_wrapper.httpx_client.stream(
+            "api/v1/agent/stream",
+            method="POST",
+            json={
+                "agentSelector": convert_and_respect_annotation_metadata(
+                    object_=agent_selector, annotation=EntityIdsSelector, direction="write"
+                ),
+                "heartbeatIntervalMs": heartbeat_interval_ms,
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        ) as _response:
+
+            async def _stream() -> AsyncHttpResponse[typing.AsyncIterator[StreamAsAgentResponse]]:
+                try:
+                    if 200 <= _response.status_code < 300:
+
+                        async def _iter():
+                            _event_source = EventSource(_response)
+                            async for _sse in _event_source.aiter_sse():
+                                if _sse.data == None:
+                                    return
+                                try:
+                                    yield typing.cast(
+                                        StreamAsAgentResponse,
+                                        parse_sse_obj(
+                                            sse=_sse,
+                                            type_=StreamAsAgentResponse,  # type: ignore
+                                        ),
+                                    )
+                                except JSONDecodeError as e:
+                                    warning(f"Skipping SSE event with invalid JSON: {e}, sse: {_sse!r}")
+                                except (TypeError, ValueError, KeyError, AttributeError) as e:
+                                    warning(
+                                        f"Skipping SSE event due to model construction error: {type(e).__name__}: {e}, sse: {_sse!r}"
+                                    )
+                                except Exception as e:
+                                    error(
+                                        f"Unexpected error processing SSE event: {type(e).__name__}: {e}, sse: {_sse!r}"
+                                    )
+                            return
+
+                        return AsyncHttpResponse(response=_response, data=_iter())
+                    await _response.aread()
+                    if _response.status_code == 400:
+                        raise BadRequestError(
+                            headers=dict(_response.headers),
+                            body=typing.cast(
+                                typing.Any,
+                                parse_obj_as(
+                                    type_=typing.Any,  # type: ignore
+                                    object_=_response.json(),
+                                ),
+                            ),
+                        )
+                    if _response.status_code == 401:
+                        raise UnauthorizedError(
+                            headers=dict(_response.headers),
+                            body=typing.cast(
+                                typing.Any,
+                                parse_obj_as(
+                                    type_=typing.Any,  # type: ignore
+                                    object_=_response.json(),
+                                ),
+                            ),
+                        )
+                    _response_json = _response.json()
+                except JSONDecodeError:
+                    raise ApiError(
+                        status_code=_response.status_code, headers=dict(_response.headers), body=_response.text
+                    )
+                except ValidationError as e:
+                    raise ParsingError(
+                        status_code=_response.status_code,
+                        headers=dict(_response.headers),
+                        body=_response.json(),
+                        cause=e,
+                    )
+                raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+            yield await _stream()

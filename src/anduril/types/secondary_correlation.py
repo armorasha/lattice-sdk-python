@@ -1,0 +1,30 @@
+# This file was auto-generated from our API Definition.
+
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.serialization import FieldMetadata
+from .correlation_metadata import CorrelationMetadata
+
+
+class SecondaryCorrelation(UniversalBaseModel):
+    primary_entity_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="primaryEntityId"),
+        pydantic.Field(alias="primaryEntityId", description="The primary of this correlation."),
+    ] = None
+    metadata: typing.Optional[CorrelationMetadata] = pydantic.Field(default=None)
+    """
+    Metadata about the correlation.
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

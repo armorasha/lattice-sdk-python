@@ -1,0 +1,58 @@
+# This file was auto-generated from our API Definition.
+
+import datetime as dt
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.serialization import FieldMetadata
+from .alert_condition import AlertCondition
+from .alert_level import AlertLevel
+
+
+class Alert(UniversalBaseModel):
+    """
+    An alert informs operators of critical events related to system performance and mission
+     execution. An alert is produced as a result of one or more alert conditions.
+    """
+
+    alert_code: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="alertCode"),
+        pydantic.Field(
+            alias="alertCode",
+            description="Short, machine-readable code that describes this alert. This code is intended to provide systems off-asset\n with a lookup key to retrieve more detailed information about the alert.",
+        ),
+    ] = None
+    description: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Human-readable description of this alert. The description is intended for display in the UI for human
+     understanding and should not be used for machine processing. If the description is fixed and the vehicle controller
+     provides no dynamic substitutions, then prefer lookup based on alert_code.
+    """
+
+    level: typing.Optional[AlertLevel] = pydantic.Field(default=None)
+    """
+    Alert level (Warning, Caution, or Advisory).
+    """
+
+    activated_time: typing_extensions.Annotated[
+        typing.Optional[dt.datetime],
+        FieldMetadata(alias="activatedTime"),
+        pydantic.Field(alias="activatedTime", description="Time at which this alert was activated."),
+    ] = None
+    active_conditions: typing_extensions.Annotated[
+        typing.Optional[typing.List[AlertCondition]],
+        FieldMetadata(alias="activeConditions"),
+        pydantic.Field(alias="activeConditions", description="Set of conditions which have activated this alert."),
+    ] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

@@ -1,0 +1,46 @@
+# This file was auto-generated from our API Definition.
+
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.serialization import FieldMetadata
+from .position import Position
+
+
+class ProjectedFrustum(UniversalBaseModel):
+    """
+    Represents a frustum in which which all four corner points project onto the ground. All points in this message
+     are optional, if the projection to the ground fails then they will not be populated.
+    """
+
+    upper_left: typing_extensions.Annotated[
+        typing.Optional[Position],
+        FieldMetadata(alias="upperLeft"),
+        pydantic.Field(alias="upperLeft", description="Upper left point of the frustum."),
+    ] = None
+    upper_right: typing_extensions.Annotated[
+        typing.Optional[Position],
+        FieldMetadata(alias="upperRight"),
+        pydantic.Field(alias="upperRight", description="Upper right point of the frustum."),
+    ] = None
+    bottom_right: typing_extensions.Annotated[
+        typing.Optional[Position],
+        FieldMetadata(alias="bottomRight"),
+        pydantic.Field(alias="bottomRight", description="Bottom right point of the frustum."),
+    ] = None
+    bottom_left: typing_extensions.Annotated[
+        typing.Optional[Position],
+        FieldMetadata(alias="bottomLeft"),
+        pydantic.Field(alias="bottomLeft", description="Bottom left point of the frustum."),
+    ] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

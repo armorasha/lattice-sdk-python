@@ -1,0 +1,41 @@
+# This file was auto-generated from our API Definition.
+
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.serialization import FieldMetadata
+from .cron_window import CronWindow
+from .schedule_schedule_type import ScheduleScheduleType
+
+
+class Schedule(UniversalBaseModel):
+    """
+    A Schedule associated with this entity
+    """
+
+    windows: typing.Optional[typing.List[CronWindow]] = pydantic.Field(default=None)
+    """
+    expression that represents this schedule's "ON" state
+    """
+
+    schedule_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="scheduleId"),
+        pydantic.Field(alias="scheduleId", description="A unique identifier for this schedule."),
+    ] = None
+    schedule_type: typing_extensions.Annotated[
+        typing.Optional[ScheduleScheduleType],
+        FieldMetadata(alias="scheduleType"),
+        pydantic.Field(alias="scheduleType", description="The schedule type"),
+    ] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

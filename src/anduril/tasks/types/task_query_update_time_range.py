@@ -1,0 +1,34 @@
+# This file was auto-generated from our API Definition.
+
+import typing
+
+import pydantic
+import typing_extensions
+from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ...core.serialization import FieldMetadata
+
+
+class TaskQueryUpdateTimeRange(UniversalBaseModel):
+    """
+    If provided, only provides Tasks updated within the time range.
+    """
+
+    start_time: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="startTime"),
+        pydantic.Field(alias="startTime", description="If provided, returns Tasks only updated after this time."),
+    ] = None
+    end_time: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="endTime"),
+        pydantic.Field(alias="endTime", description="If provided, returns Tasks only updated before this time."),
+    ] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

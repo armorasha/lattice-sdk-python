@@ -1,0 +1,47 @@
+# This file was auto-generated from our API Definition.
+
+from __future__ import annotations
+
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel, update_forward_refs
+from ..core.serialization import FieldMetadata
+
+
+class CancelRequest(UniversalBaseModel):
+    """
+    The request to cancel a task.
+     Contains the task, and the assignee of the request to cancel the task.
+    """
+
+    task_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="taskId"),
+        pydantic.Field(alias="taskId", description="The unique task ID of the task to cancel."),
+    ] = None
+    assignee: typing.Optional["Principal"] = pydantic.Field(default=None)
+    """
+    The assignee of the Task. Useful for agent routing where an endpoint owns multiple agents,
+     especially onBehalfOf assignees.
+    """
+
+    author: typing.Optional["Principal"] = pydantic.Field(default=None)
+    """
+    The principal that requested to cancel the task.
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow
+
+
+from .principal import Principal  # noqa: E402, I001
+
+update_forward_refs(CancelRequest, Principal=Principal)

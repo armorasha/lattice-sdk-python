@@ -1,0 +1,40 @@
+# This file was auto-generated from our API Definition.
+
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.serialization import FieldMetadata
+from .correlation_metadata_replication_mode import CorrelationMetadataReplicationMode
+from .correlation_metadata_type import CorrelationMetadataType
+from .provenance import Provenance
+
+
+class CorrelationMetadata(UniversalBaseModel):
+    provenance: typing.Optional[Provenance] = pydantic.Field(default=None)
+    """
+    Who or what added this entity to the (de)correlation.
+    """
+
+    replication_mode: typing_extensions.Annotated[
+        typing.Optional[CorrelationMetadataReplicationMode],
+        FieldMetadata(alias="replicationMode"),
+        pydantic.Field(
+            alias="replicationMode",
+            description="Indicates how the correlation will be distributed. Because a correlation is composed of\n multiple secondaries, each of which may have been correlated with different replication\n modes, the distribution of the correlation is composed of distributions of the individual\n entities within the correlation set.\n For example, if there are two secondary entities A and B correlated against a primary C,\n with A having been correlated globally and B having been correlated locally, then the\n correlation set that is distributed globally than what is known locally in the node.",
+        ),
+    ] = None
+    type: typing.Optional[CorrelationMetadataType] = pydantic.Field(default=None)
+    """
+    What type of (de)correlation was this entity added with.
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

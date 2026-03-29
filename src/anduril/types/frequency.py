@@ -1,0 +1,32 @@
+# This file was auto-generated from our API Definition.
+
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.serialization import FieldMetadata
+from .measurement import Measurement
+
+
+class Frequency(UniversalBaseModel):
+    """
+    A component for describing frequency.
+    """
+
+    frequency_hz: typing_extensions.Annotated[
+        typing.Optional[Measurement],
+        FieldMetadata(alias="frequencyHz"),
+        pydantic.Field(
+            alias="frequencyHz", description="Indicates a frequency of a signal (Hz) with its standard deviation."
+        ),
+    ] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

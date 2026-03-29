@@ -1,0 +1,29 @@
+# This file was auto-generated from our API Definition.
+
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.serialization import FieldMetadata
+from .orbit_mean_elements import OrbitMeanElements
+
+
+class Orbit(UniversalBaseModel):
+    orbit_mean_elements: typing_extensions.Annotated[
+        typing.Optional[OrbitMeanElements],
+        FieldMetadata(alias="orbitMeanElements"),
+        pydantic.Field(
+            alias="orbitMeanElements",
+            description="Orbit Mean Elements data, analogous to the Orbit Mean Elements Message in CCSDS 502.0-B-3",
+        ),
+    ] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

@@ -1,0 +1,49 @@
+# This file was auto-generated from our API Definition.
+
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.serialization import FieldMetadata
+
+
+class GeoEllipsoid(UniversalBaseModel):
+    """
+    An ellipsoid shaped geo-entity.
+     Principal axis lengths are defined in entity body space
+     This shape is NOT Geo-JSON compatible.
+    """
+
+    forward_axis_m: typing_extensions.Annotated[
+        typing.Optional[float],
+        FieldMetadata(alias="forwardAxisM"),
+        pydantic.Field(
+            alias="forwardAxisM",
+            description="Defines the distance from the center point to the surface along the forward axis",
+        ),
+    ] = None
+    side_axis_m: typing_extensions.Annotated[
+        typing.Optional[float],
+        FieldMetadata(alias="sideAxisM"),
+        pydantic.Field(
+            alias="sideAxisM",
+            description="Defines the distance from the center point to the surface along the side axis",
+        ),
+    ] = None
+    up_axis_m: typing_extensions.Annotated[
+        typing.Optional[float],
+        FieldMetadata(alias="upAxisM"),
+        pydantic.Field(
+            alias="upAxisM", description="Defines the distance from the center point to the surface along the up axis"
+        ),
+    ] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

@@ -1,0 +1,29 @@
+# This file was auto-generated from our API Definition.
+
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.serialization import FieldMetadata
+
+
+class Threat(UniversalBaseModel):
+    """
+    Describes whether an entity is a threat or not.
+    """
+
+    is_threat: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="isThreat"),
+        pydantic.Field(alias="isThreat", description="Indicates that the entity has been determined to be a threat."),
+    ] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

@@ -1,0 +1,52 @@
+# This file was auto-generated from our API Definition.
+
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.serialization import FieldMetadata
+
+
+class TaskVersion(UniversalBaseModel):
+    """
+    Versioning information for a task.
+
+     TaskVersion provides a unique identifier for each task, along with separate version counters
+     for tracking changes to the task's definition and its status. This versioning system enables
+     optimistic concurrency control, ensuring that updates from multiple sources don't conflict.
+    """
+
+    task_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="taskId"),
+        pydantic.Field(
+            alias="taskId",
+            description="The unique identifier for this task, used to distinguish it from all other tasks in the system.",
+        ),
+    ] = None
+    definition_version: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="definitionVersion"),
+        pydantic.Field(
+            alias="definitionVersion",
+            description="Counter that increments on changes to the task definition.\n Unset (0) initially, starts at 1 on creation, and increments with each update to task fields.",
+        ),
+    ] = None
+    status_version: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="statusVersion"),
+        pydantic.Field(
+            alias="statusVersion",
+            description="Counter that increments on changes to TaskStatus.\n Unset (0) initially, starts at 1 on creation, and increments with each status update.",
+        ),
+    ] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

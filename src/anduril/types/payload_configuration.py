@@ -1,0 +1,52 @@
+# This file was auto-generated from our API Definition.
+
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.serialization import FieldMetadata
+from .payload_configuration_effective_environment_item import PayloadConfigurationEffectiveEnvironmentItem
+from .payload_configuration_payload_operational_state import PayloadConfigurationPayloadOperationalState
+
+
+class PayloadConfiguration(UniversalBaseModel):
+    capability_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="capabilityId"),
+        pydantic.Field(
+            alias="capabilityId",
+            description="Identifying ID for the capability.\n This ID may be used multiple times to represent payloads that are the same capability but have different operational states",
+        ),
+    ] = None
+    quantity: typing.Optional[int] = pydantic.Field(default=None)
+    """
+    The number of payloads currently available in the configuration.
+    """
+
+    effective_environment: typing_extensions.Annotated[
+        typing.Optional[typing.List[PayloadConfigurationEffectiveEnvironmentItem]],
+        FieldMetadata(alias="effectiveEnvironment"),
+        pydantic.Field(
+            alias="effectiveEnvironment", description="The target environments the configuration is effective against."
+        ),
+    ] = None
+    payload_operational_state: typing_extensions.Annotated[
+        typing.Optional[PayloadConfigurationPayloadOperationalState],
+        FieldMetadata(alias="payloadOperationalState"),
+        pydantic.Field(alias="payloadOperationalState", description="The operational state of this payload."),
+    ] = None
+    payload_description: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="payloadDescription"),
+        pydantic.Field(alias="payloadDescription", description="A human readable description of the payload"),
+    ] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

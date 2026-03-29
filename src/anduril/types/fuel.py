@@ -1,0 +1,74 @@
+# This file was auto-generated from our API Definition.
+
+import datetime as dt
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.serialization import FieldMetadata
+from .classification import Classification
+
+
+class Fuel(UniversalBaseModel):
+    """
+    Fuel describes an entity's repository of fuels stores including current amount, operational requirements, and maximum authorized capacity
+    """
+
+    fuel_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="fuelId"),
+        pydantic.Field(alias="fuelId", description="Unique fuel identifier"),
+    ] = None
+    name: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Long form name of the fuel source.
+    """
+
+    reported_date: typing_extensions.Annotated[
+        typing.Optional[dt.datetime],
+        FieldMetadata(alias="reportedDate"),
+        pydantic.Field(alias="reportedDate", description="Timestamp the information was reported"),
+    ] = None
+    amount_gallons: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="amountGallons"),
+        pydantic.Field(alias="amountGallons", description="Amount of gallons on hand"),
+    ] = None
+    max_authorized_capacity_gallons: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="maxAuthorizedCapacityGallons"),
+        pydantic.Field(
+            alias="maxAuthorizedCapacityGallons",
+            description="How much the asset is allowed to have available (in gallons)",
+        ),
+    ] = None
+    operational_requirement_gallons: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="operationalRequirementGallons"),
+        pydantic.Field(
+            alias="operationalRequirementGallons", description="Minimum required for operations (in gallons)"
+        ),
+    ] = None
+    data_classification: typing_extensions.Annotated[
+        typing.Optional[Classification],
+        FieldMetadata(alias="dataClassification"),
+        pydantic.Field(
+            alias="dataClassification",
+            description="Fuel in a single asset may have different levels of classification\n Use case: fuel for a SECRET asset while diesel fuel may be UNCLASSIFIED",
+        ),
+    ] = None
+    data_source: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="dataSource"),
+        pydantic.Field(alias="dataSource", description="Source of information"),
+    ] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

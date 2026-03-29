@@ -1,0 +1,45 @@
+# This file was auto-generated from our API Definition.
+
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.serialization import FieldMetadata
+from .color import Color
+
+
+class RangeRings(UniversalBaseModel):
+    """
+    Range rings allow visual assessment of map distance at varying zoom levels.
+    """
+
+    min_distance_m: typing_extensions.Annotated[
+        typing.Optional[float],
+        FieldMetadata(alias="minDistanceM"),
+        pydantic.Field(alias="minDistanceM", description="The minimum range ring distance, specified in meters."),
+    ] = None
+    max_distance_m: typing_extensions.Annotated[
+        typing.Optional[float],
+        FieldMetadata(alias="maxDistanceM"),
+        pydantic.Field(alias="maxDistanceM", description="The maximum range ring distance, specified in meters."),
+    ] = None
+    ring_count: typing_extensions.Annotated[
+        typing.Optional[int],
+        FieldMetadata(alias="ringCount"),
+        pydantic.Field(alias="ringCount", description="The count of range rings."),
+    ] = None
+    ring_line_color: typing_extensions.Annotated[
+        typing.Optional[Color],
+        FieldMetadata(alias="ringLineColor"),
+        pydantic.Field(alias="ringLineColor", description="The color of range rings, specified in hex string."),
+    ] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

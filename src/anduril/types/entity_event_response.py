@@ -1,0 +1,39 @@
+# This file was auto-generated from our API Definition.
+
+from __future__ import annotations
+
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel, update_forward_refs
+from ..core.serialization import FieldMetadata
+from .entity_event import EntityEvent
+
+
+class EntityEventResponse(UniversalBaseModel):
+    session_token: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="sessionToken"),
+        pydantic.Field(
+            alias="sessionToken",
+            description="Long-poll session identifier. Use this token to resume polling on subsequent requests.",
+        ),
+    ] = None
+    entity_events: typing_extensions.Annotated[
+        typing.Optional[typing.List[EntityEvent]],
+        FieldMetadata(alias="entityEvents"),
+        pydantic.Field(alias="entityEvents"),
+    ] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow
+
+
+update_forward_refs(EntityEventResponse)

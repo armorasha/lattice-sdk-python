@@ -1,0 +1,39 @@
+# This file was auto-generated from our API Definition.
+
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.serialization import FieldMetadata
+from .frequency import Frequency
+
+
+class FrequencyRange(UniversalBaseModel):
+    """
+    A component to represent a frequency range.
+    """
+
+    minimum_frequency_hz: typing_extensions.Annotated[
+        typing.Optional[Frequency],
+        FieldMetadata(alias="minimumFrequencyHz"),
+        pydantic.Field(
+            alias="minimumFrequencyHz", description="Indicates the lowest measured frequency of a signal (Hz)."
+        ),
+    ] = None
+    maximum_frequency_hz: typing_extensions.Annotated[
+        typing.Optional[Frequency],
+        FieldMetadata(alias="maximumFrequencyHz"),
+        pydantic.Field(
+            alias="maximumFrequencyHz", description="Indicates the maximum measured frequency of a signal (Hz)."
+        ),
+    ] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

@@ -1,0 +1,30 @@
+# This file was auto-generated from our API Definition.
+
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.serialization import FieldMetadata
+from .range_rings import RangeRings
+
+
+class VisualDetails(UniversalBaseModel):
+    """
+    Visual details associated with the display of an entity in the client.
+    """
+
+    range_rings: typing_extensions.Annotated[
+        typing.Optional[RangeRings],
+        FieldMetadata(alias="rangeRings"),
+        pydantic.Field(alias="rangeRings", description="The range rings to display around an entity."),
+    ] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow
